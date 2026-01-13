@@ -17,11 +17,23 @@ cmp.setup({
       behavior = cmp.ConfirmBehavior.Insert,
       select = true,
     }),
+    -- manual Minuet trigger
+    ['<A-y>'] = require('minuet').make_cmp_map(),  -- Alt-y
   }),
   sources = cmp.config.sources({
+    -- give Minuet high priority, ahead of LSP
+    { name = 'minuet', group_index = 1, priority = 100 },
     { name = 'nvim_lsp' },
     { name = 'vsnip' },
     { name = 'path' },
     { name = 'buffer' },
-  })
+  }),
+  performance = {
+    -- recommended to avoid timeouts with LLM backends
+    fetching_timeout = 2000,
+  },
+})
+
+cmp.setup.filetype('capnp', {
+  enabled = false,
 })
