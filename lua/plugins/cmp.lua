@@ -17,12 +17,9 @@ cmp.setup({
       behavior = cmp.ConfirmBehavior.Insert,
       select = true,
     }),
-    -- manual Minuet trigger
-    ['<A-y>'] = require('minuet').make_cmp_map(),  -- Alt-y
   }),
   sources = cmp.config.sources({
-    -- give Minuet high priority, ahead of LSP
-    { name = 'minuet', group_index = 1, priority = 100 },
+    { name = 'localnest' },  -- LocalNest AI source
     { name = 'nvim_lsp' },
     { name = 'vsnip' },
     { name = 'path' },
@@ -37,3 +34,4 @@ cmp.setup({
 cmp.setup.filetype('capnp', {
   enabled = false,
 })
+

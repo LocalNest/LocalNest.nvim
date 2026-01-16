@@ -12,16 +12,17 @@ require('core.plugins')
 -- Load plugin configurations AFTER packer
 vim.cmd [[packadd packer.nvim]]
 vim.schedule(function()
-  require('nvim-web-devicons').setup()
-  require('plugins.dashboard')
-  require('plugins.diagnostics')
-  require('plugins.cmp')
-  require('plugins.lsp')
-  require('plugins.telescope')
-  require('plugins.treesitter')
-  -- Theme
-  vim.cmd [[colorscheme tokyonight]]
-  vim.cmd [[highlight Normal ctermfg=white ctermbg=black]]
+    require('nvim-web-devicons').setup()
+    require('plugins.dashboard')
+    require('plugins.diagnostics')
+    require('plugins.cmp')
+    require('plugins.lsp')
+    require('plugins.telescope')
+    require('plugins.treesitter')
+    require('plugins.localnest')
+    -- Theme
+    vim.cmd [[colorscheme tokyonight]]
+    vim.cmd [[highlight Normal ctermfg=white ctermbg=black]]
 end)
 
 vim.opt.clipboard = "unnamedplus"

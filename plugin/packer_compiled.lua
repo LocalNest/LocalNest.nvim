@@ -144,6 +144,12 @@ _G.packer_plugins = {
     path = "/home/kodr/.local/share/nvim/site/pack/packer/start/indent-blankline.nvim",
     url = "https://github.com/lukas-reineke/indent-blankline.nvim"
   },
+  localnest = {
+    config = { "\27LJ\2\n;\0\0\3\0\3\0\a6\0\0\0'\2\1\0B\0\2\0029\0\2\0004\2\0\0B\0\2\1K\0\1\0\nsetup\14localnest\frequire\0" },
+    loaded = true,
+    path = "/home/kodr/.local/share/nvim/site/pack/packer/start/localnest",
+    url = "/home/kodr/.config/nvim/lua/localnest"
+  },
   ["lsp-inlayhints.nvim"] = {
     loaded = true,
     path = "/home/kodr/.local/share/nvim/site/pack/packer/start/lsp-inlayhints.nvim",
@@ -153,12 +159,6 @@ _G.packer_plugins = {
     loaded = true,
     path = "/home/kodr/.local/share/nvim/site/pack/packer/start/lualine.nvim",
     url = "https://github.com/nvim-lualine/lualine.nvim"
-  },
-  ["minuet-ai.nvim"] = {
-    config = { "\27LJ\2\n¬\5\0\0\6\0\16\0\0196\0\0\0'\2\1\0B\0\2\0029\0\2\0005\2\3\0005\3\5\0005\4\4\0=\4\6\0035\4\a\0=\4\b\3=\3\t\0025\3\r\0005\4\n\0005\5\v\0=\5\f\4=\4\14\3=\3\15\2B\0\2\1K\0\1\0\21provider_options\26openai_fim_compatible\1\0\1\26openai_fim_compatible\0\roptional\1\0\3\16temperature\3\0\ntop_p\4Õô≥Ê\fÃô≥ˇ\3\15max_tokens\3\f\1\0\6\14end_point)http://localnest:8888/v1/completions\fapi_key\tTERM\roptional\0\vstream\2\tname\vOllama\nmodel\21qwen2.5-coder:7b\16virtualtext\vkeymap\1\0\6\19accept_n_lines\n<C-m>\tprev\n<C-p>\vaccept\n<C-b>\fdismiss\n<C-q>\16accept_line\n<C-n>\tnext\n<C-g>\20auto_trigger_ft\1\0\3\28show_on_completion_menu\2\20auto_trigger_ft\0\vkeymap\0\1\a\0\0\blua\trust\ago\15typescript\15javascript\vpython\1\0\b\16virtualtext\0\rprovider\26openai_fim_compatible\21provider_options\0\rdebounce\3ñ\1\rthrottle\3ê\3\20request_timeout\3\5\19context_window\3Ä\b\18n_completions\3\1\nsetup\vminuet\frequire\0" },
-    loaded = true,
-    path = "/home/kodr/.local/share/nvim/site/pack/packer/start/minuet-ai.nvim",
-    url = "https://github.com/milanglacier/minuet-ai.nvim"
   },
   ["neoscroll.nvim"] = {
     loaded = true,
@@ -205,12 +205,6 @@ _G.packer_plugins = {
     path = "/home/kodr/.local/share/nvim/site/pack/packer/start/nvim-web-devicons",
     url = "https://github.com/nvim-tree/nvim-web-devicons"
   },
-  ["opencode.nvim"] = {
-    config = { "\27LJ\2\n*\0\0\2\0\3\0\0056\0\0\0009\0\1\0+\1\2\0=\1\2\0K\0\1\0\rautoread\6o\bvim\0" },
-    loaded = true,
-    path = "/home/kodr/.local/share/nvim/site/pack/packer/start/opencode.nvim",
-    url = "https://github.com/NickvanDyke/opencode.nvim"
-  },
   ["packer.nvim"] = {
     loaded = true,
     path = "/home/kodr/.local/share/nvim/site/pack/packer/start/packer.nvim",
@@ -230,11 +224,6 @@ _G.packer_plugins = {
     loaded = true,
     path = "/home/kodr/.local/share/nvim/site/pack/packer/start/rust-tools.nvim",
     url = "https://github.com/simrat39/rust-tools.nvim"
-  },
-  ["snacks.nvim"] = {
-    loaded = true,
-    path = "/home/kodr/.local/share/nvim/site/pack/packer/start/snacks.nvim",
-    url = "https://github.com/folke/snacks.nvim"
   },
   ["telescope-fzf-native.nvim"] = {
     loaded = true,
@@ -280,26 +269,22 @@ _G.packer_plugins = {
 }
 
 time([[Defining packer_plugins]], false)
--- Config for: dashboard-nvim
-time([[Config for dashboard-nvim]], true)
-try_loadstring("\27LJ\2\n1\0\0\3\0\2\0\0046\0\0\0'\2\1\0B\0\2\1K\0\1\0\22plugins.dashboard\frequire\0", "config", "dashboard-nvim")
-time([[Config for dashboard-nvim]], false)
+-- Config for: localnest
+time([[Config for localnest]], true)
+try_loadstring("\27LJ\2\n;\0\0\3\0\3\0\a6\0\0\0'\2\1\0B\0\2\0029\0\2\0004\2\0\0B\0\2\1K\0\1\0\nsetup\14localnest\frequire\0", "config", "localnest")
+time([[Config for localnest]], false)
 -- Config for: which-key.nvim
 time([[Config for which-key.nvim]], true)
 try_loadstring("\27LJ\2\n7\0\0\3\0\3\0\0066\0\0\0'\2\1\0B\0\2\0029\0\2\0B\0\1\1K\0\1\0\nsetup\14which-key\frequire\0", "config", "which-key.nvim")
 time([[Config for which-key.nvim]], false)
--- Config for: opencode.nvim
-time([[Config for opencode.nvim]], true)
-try_loadstring("\27LJ\2\n*\0\0\2\0\3\0\0056\0\0\0009\0\1\0+\1\2\0=\1\2\0K\0\1\0\rautoread\6o\bvim\0", "config", "opencode.nvim")
-time([[Config for opencode.nvim]], false)
+-- Config for: dashboard-nvim
+time([[Config for dashboard-nvim]], true)
+try_loadstring("\27LJ\2\n1\0\0\3\0\2\0\0046\0\0\0'\2\1\0B\0\2\1K\0\1\0\22plugins.dashboard\frequire\0", "config", "dashboard-nvim")
+time([[Config for dashboard-nvim]], false)
 -- Config for: auto-session
 time([[Config for auto-session]], true)
 try_loadstring("\27LJ\2\n∞\1\0\0\4\0\6\0\t6\0\0\0'\2\1\0B\0\2\0029\0\2\0005\2\3\0005\3\4\0=\3\5\2B\0\2\1K\0\1\0\31auto_session_suppress_dirs\1\5\0\0\a~/\15~/Projects\16~/Downloads\6/\1\0\2\31auto_session_suppress_dirs\0\14log_level\nerror\nsetup\17auto-session\frequire\0", "config", "auto-session")
 time([[Config for auto-session]], false)
--- Config for: minuet-ai.nvim
-time([[Config for minuet-ai.nvim]], true)
-try_loadstring("\27LJ\2\n¬\5\0\0\6\0\16\0\0196\0\0\0'\2\1\0B\0\2\0029\0\2\0005\2\3\0005\3\5\0005\4\4\0=\4\6\0035\4\a\0=\4\b\3=\3\t\0025\3\r\0005\4\n\0005\5\v\0=\5\f\4=\4\14\3=\3\15\2B\0\2\1K\0\1\0\21provider_options\26openai_fim_compatible\1\0\1\26openai_fim_compatible\0\roptional\1\0\3\16temperature\3\0\ntop_p\4Õô≥Ê\fÃô≥ˇ\3\15max_tokens\3\f\1\0\6\14end_point)http://localnest:8888/v1/completions\fapi_key\tTERM\roptional\0\vstream\2\tname\vOllama\nmodel\21qwen2.5-coder:7b\16virtualtext\vkeymap\1\0\6\19accept_n_lines\n<C-m>\tprev\n<C-p>\vaccept\n<C-b>\fdismiss\n<C-q>\16accept_line\n<C-n>\tnext\n<C-g>\20auto_trigger_ft\1\0\3\28show_on_completion_menu\2\20auto_trigger_ft\0\vkeymap\0\1\a\0\0\blua\trust\ago\15typescript\15javascript\vpython\1\0\b\16virtualtext\0\rprovider\26openai_fim_compatible\21provider_options\0\rdebounce\3ñ\1\rthrottle\3ê\3\20request_timeout\3\5\19context_window\3Ä\b\18n_completions\3\1\nsetup\vminuet\frequire\0", "config", "minuet-ai.nvim")
-time([[Config for minuet-ai.nvim]], false)
 vim.cmd [[augroup packer_load_aucmds]]
 vim.cmd [[au!]]
   -- Filetype lazy-loads

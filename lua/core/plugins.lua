@@ -141,60 +141,15 @@ return require('packer').startup(function(use)
     use 'karb94/neoscroll.nvim'
 
 
-    --opencode
-    use({
-        "NickvanDyke/opencode.nvim",
-        requires = {
-            {
-                "folke/snacks.nvim", opts = { input = {}, picker = {}, terminal = {} }
-            },
-        },
-        config = function()
-            vim.o.autoread = true
-        end,
-    })
+
 
     use {
-        'milanglacier/minuet-ai.nvim',
+        vim.fn.stdpath('config') .. '/lua/localnest',
         config = function()
-            require('minuet').setup {
-                provider = 'openai_fim_compatible',
-                n_completions = 1,
-                context_window = 1024,
-                request_timeout = 5,
-                throttle = 400,
-                debounce = 150,
-
-                virtualtext = {
-                    auto_trigger_ft = { 'lua', 'rust', 'go', 'typescript', 'javascript', 'python' },
-                    keymap = {
-                        accept         = '<C-b>',
-                        accept_line    = '<C-n>',
-                        accept_n_lines = '<C-m>',
-                        next           = '<C-g>',
-                        prev           = '<C-p>',
-                        dismiss        = '<C-q>',
-                    },
-                    show_on_completion_menu = true,
-                },
-
-                provider_options = {
-                    openai_fim_compatible = {
-                        api_key   = 'TERM',
-                        name      = 'Ollama',
-                        end_point = 'http://localnest:8888/v1/completions',
-                        model     = 'qwen2.5-coder:7b',
-                        stream    = true,
-                        optional  = {
-                            max_tokens  = 12,
-                            top_p       = 0.9,
-                            temperature = 0.0,
-                        },
-                    },
-                },
-            }
+            require('localnest').setup({})
         end,
     }
+
 
     if packer_bootstrap then
         require('packer').sync()
