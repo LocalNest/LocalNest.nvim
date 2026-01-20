@@ -7,51 +7,25 @@ local config  = require("localnest.config")
 local http    = require("localnest.http")
 local prompts = require("localnest.prompts")
 
-
--- wrap_text
-local function wrap_text(text, width)
-    local lines = {}
-    local current_line = ""
-
-    for word in text:gmatch("%S+") do
-        if #current_line + #word + 1 > width then
-            table.insert(lines, current_line)
-            current_line = word
-        else
-            current_line = current_line .. (current_line == "" and "" or " ") .. word
-        end
-    end
-    if current_line ~= "" then
-        table.insert(lines, current_line)
-    end
-    return lines
-end
-
-
--- Show result in a floating window
 local function open_floating_window(title, text)
     local width  = math.floor(vim.o.columns * 0.7)
     local height = math.floor(vim.o.lines * 0.5)
     local row    = math.floor((vim.o.lines - height) / 2)
     local col    = math.floor((vim.o.columns - width) / 2)
     local buf    = vim.api.nvim_create_buf(false, true)
-    -- header lines using title
-    local lines = {}
+
+    local lines  = {}
     table.insert(lines, title)
     table.insert(lines, string.rep("─", math.max(10, #title)))
 
-    -- wrap the body text
-    local wrapped = wrap_text(text, width - 4)  -- small margin
-    for _, l in ipairs(wrapped) do
+    -- no wrap_text here; just split on newlines
+    for _, l in ipairs(vim.split(text, "\n", { plain = true })) do
         table.insert(lines, l)
     end
+
     vim.api.nvim_buf_set_lines(buf, 0, -1, false, lines)
 
-    vim.notify(string.format("height %d", height))
-
-    vim.notify(string.format("width %d", width))
-
-    vim.api.nvim_open_win(buf, true, {
+    local win = vim.api.nvim_open_win(buf, true, {
         relative = "editor",
         width = width,
         height = height,
@@ -60,13 +34,13 @@ local function open_floating_window(title, text)
         style = "minimal",
         border = "rounded",
     })
-    -- enable wrapping & nice wrapped behavior
-    vim.api.nvim_set_option_value("wrap", true, { scope = "local" })
-    vim.api.nvim_set_option_value("linebreak", true, { scope = "local" })  -- wrap at word boundaries
-    vim.api.nvim_set_option_value("breakindent", true, { scope = "local" }) -- keep indent on wrapped lines
-    -- optional: tweak how wrapped indent looks
-    vim.api.nvim_set_option_value("breakindentopt", "shift:2", { scope = "local" })
+
+    vim.api.nvim_set_option_value("wrap", true, { win = win })
+    vim.api.nvim_set_option_value("linebreak", true, { win = win })
+    vim.api.nvim_set_option_value("breakindent", true, { win = win })
+    vim.api.nvim_set_option_value("breakindentopt", "shift:2", { win = win })
 end
+
 
 -- Get visual selection from current visual range
 local function get_visual_selection()
@@ -174,29 +148,7 @@ function M.ask_on_selection()
                 return
             end
 
-            -- Use your existing UI (floating window or cmp)
-            -- floating window version:
-            local title = "LocalNest AI Response"
-            local buf = vim.api.nvim_create_buf(false, true)
-            local lines = vim.split(response, "\n", { plain = true })
-            table.insert(lines, 1, title)
-            table.insert(lines, 2, string.rep("─", math.max(10, #title)))
-            vim.api.nvim_buf_set_lines(buf, 0, -1, false, lines)
-
-            local width  = math.floor(vim.o.columns * 0.7)
-            local height = math.floor(vim.o.lines * 0.5)
-            local row    = math.floor((vim.o.lines - height) / 2)
-            local col    = math.floor((vim.o.columns - width) / 2)
-
-            vim.api.nvim_open_win(buf, true, {
-                relative = "editor",
-                width = width,
-                height = height,
-                row = row,
-                col = col,
-                style = "minimal",
-                border = "rounded",
-            })
+            open_floating_window("LocalNest AI Response", response)
         end)
     end)
 end
@@ -246,10 +198,6 @@ function M.ask_inline()
 
         open_floating_window("LocalNest AI Response", response)
     end)
-end
-
-function M.complete(question, system_prompt, callback)
-    return llama_complete(question, system_prompt, callback)
 end
 
 return M

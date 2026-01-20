@@ -1,5 +1,4 @@
 -- nvim/lua/localnest/config.lua
--- Configuration management for LocalNest plugin
 
 local M = {}
 
@@ -17,13 +16,12 @@ local defaults = {
 
   fim = {
     enabled = true,
-    trigger = "<C-x>",  -- Manual trigger
-    auto_trigger = false,  -- Auto on certain chars
-    max_tokens = 64,
-    temperature = 0.3,
+    auto_trigger = true,
+    max_tokens = 32,
+    temperature = 0.1,
     stop_sequences = { "\n\n", "```" },
     -- Constraints
-    only_in_code = true,  -- FIM only in code blocks
+    only_in_code = true,
     code_filetypes = { "lua", "rust", "python", "go", "typescript", "javascript", "cpp", "c" },
     min_prefix_len = 3,
     reject_short_results = true,
@@ -31,11 +29,6 @@ local defaults = {
 
   chat = {
     enabled = true,
-    trigger_mode = {
-      visual = "<leader>lq",  -- Visual: question on selection
-      visual_file = "<leader>lf",  -- Visual: whole file context
-      insert = "<leader>li",  -- Insert: opens @this input
-    },
     max_tokens = 512,
     temperature = 0.7,
     system_prompt = "You are a helpful coding assistant. Help with code generation, debugging, refactoring, and explanation. Be precise and concise.",
