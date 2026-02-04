@@ -1,13 +1,13 @@
 -- lua/localnest/fim.lua
-local api     = vim.api
-local config  = require("localnest.config")
-local http    = require("localnest.http")
+local api    = vim.api
+local config = require("localnest.config")
+local http   = require("localnest.http")
 
-local M       = {}
+local M      = {}
 
-local ns_fim  = api.nvim_create_namespace("localnest_fim")
+local ns_fim = api.nvim_create_namespace("localnest_fim")
 
-M.state       = M.state or {}
+M.state      = M.state or {}
 
 local function clear_state()
     if M.state.bufnr and api.nvim_buf_is_valid(M.state.bufnr) then
@@ -17,10 +17,10 @@ local function clear_state()
 end
 
 local function show_ghost(bufnr, lnum, col, text)
+    vim.notify("LocalNest FIM Show Ghost Called", vim.log.levels.INFO)
     api.nvim_buf_clear_namespace(bufnr, ns_fim, 0, -1)
 
     if not text or text == "" then return end
-    
     -- Only show the first line of the suggestion
     local first_line = text:match("([^\n\r]*)")
     if not first_line or first_line == "" then return end
@@ -42,10 +42,11 @@ local function show_ghost(bufnr, lnum, col, text)
 end
 
 function M.trigger()
+    vim.notify("LocalNest FIM Trigger Called", vim.log.levels.INFO)
     local bufnr        = api.nvim_get_current_buf()
     local pos          = api.nvim_win_get_cursor(0)
     local lnum         = pos[1] - 1 -- 0-based
-    local col          = pos[2] -- 0-based byte index
+    local col          = pos[2]     -- 0-based byte index
 
     -- Get all lines
     local lines        = api.nvim_buf_get_lines(bufnr, 0, -1, false)
@@ -121,6 +122,7 @@ function M.dismiss()
 end
 
 function M.complete(prefix, suffix, callback)
+    vim.notify("LocalNest FIM Complete Called", vim.log.levels.INFO)
     local url = string.format(
         "http://%s:%d/infill",
         config.get("llama_server.host"),
@@ -137,29 +139,28 @@ function M.complete(prefix, suffix, callback)
     }
 
     http.post(url, body, function(err, response)
-        vim.schedule(function()
-            if err then
-                vim.notify("FIM error: " .. err, vim.log.levels.ERROR)
-                callback(nil)
-                return
-            end
 
-            if type(response) ~= "table" then
-                vim.notify("FIM error: invalid response", vim.log.levels.WARN)
-                callback(nil)
-                return
-            end
+        vim.notify("Text Suggestion Response: " .. response.content, vim.log.levels.INFO)
+        if err then
+            vim.notify("FIM error: " .. err, vim.log.levels.ERROR)
+            callback(nil)
+            return
+        end
 
-            local text = response.content or response.completion or response.text
+        if type(response) ~= "table" then
+            vim.notify("FIM error: invalid response", vim.log.levels.WARN)
+            callback(nil)
+            return
+        end
 
-            if not text or text == "" then
-                vim.notify("FIM error: empty response", vim.log.levels.WARN)
-                callback(nil)
-                return
-            end
+        local text = response.content
 
-            callback(text)
-        end)
+        if not text or text == "" then
+            vim.notify("FIM error: empty response", vim.log.levels.WARN)
+            callback(nil)
+            return
+        end
+        callback(text)
     end)
 end
 

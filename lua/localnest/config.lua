@@ -9,11 +9,6 @@ local defaults = {
     timeout = 30000,  -- ms
   },
 
-  models = {
-    fim = "qwen2.5-coder-7b.ollama.gguf",
-    chat = "qwen2.5-coder-7b.ollama.gguf",
-  },
-
   fim = {
     enabled = true,
     auto_trigger = true,

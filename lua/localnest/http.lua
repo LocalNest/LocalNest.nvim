@@ -24,8 +24,13 @@ function M.post(url, body, callback, opts)
         "--max-time", tostring(timeout / 1000)
     }, {
         on_stdout = function(_, data)
-            if not data then return end
-            
+            if not data then
+                vim.notify("data was NONE", vim.log.levels.WARN)
+                return
+            end
+            if not stream then
+                full_response = data
+            end
             -- jobstart data is a list of strings
             -- The last string in the list is what's after the last newline
             for i, chunk in ipairs(data) do
@@ -54,11 +59,17 @@ function M.post(url, body, callback, opts)
         end,
         on_exit = function(_, exit_code)
             if not stream then
+                vim.notify("Non Streaming result found: " .. exit_code, vim.log.levels.INFO)
                 if full_response ~= "" then
                     local ok, decoded = pcall(vim.json.decode, full_response)
                     if ok then
+                        vim.notify("Full Response Decoded", vim.log.levels.INFO)
                         vim.schedule(function() callback(nil, decoded) end)
+                    else
+                        vim.notify("Error Decoding Non Stream Result: " .. full_response, vim.log.levels.WARN)
                     end
+                else
+                    vim.notify("Error, Empty full_response", vim.log.levels.WARN)
                 end
             else
                 -- Signal end of stream

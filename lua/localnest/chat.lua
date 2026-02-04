@@ -1,7 +1,7 @@
 -- nvim/lua/localnest/chat.lua
 -- Chat/question mode module with floating window and streaming support
 
-local M = {}
+local M       = {}
 
 local config  = require("localnest.config")
 local http    = require("localnest.http")
@@ -9,7 +9,7 @@ local prompts = require("localnest.prompts")
 local context = require("localnest.context")
 local tools   = require("localnest.tools")
 
-M.state = {
+M.state       = {
     bufnr = nil,
     winid = nil,
     history = {},
@@ -20,8 +20,8 @@ local function open_floating_window(title)
     local height = math.floor(vim.o.lines * 0.6)
     local row    = math.floor((vim.o.lines - height) / 2)
     local col    = math.floor((vim.o.columns - width) / 2)
-    
-    local buf = vim.api.nvim_create_buf(false, true)
+
+    local buf    = vim.api.nvim_create_buf(false, true)
     vim.api.nvim_buf_set_name(buf, "LocalNest Chat " .. os.time())
     vim.api.nvim_set_option_value("filetype", "markdown", { buf = buf })
     vim.api.nvim_set_option_value("buftype", "nofile", { buf = buf })
@@ -51,20 +51,20 @@ local function append_to_chat(text)
     if not M.state.bufnr or not vim.api.nvim_buf_is_valid(M.state.bufnr) then
         return
     end
-    
+
     local buf = M.state.bufnr
     local lines = vim.split(text, "\n", { plain = true })
-    
+
     local last_line_idx = vim.api.nvim_buf_line_count(buf)
     local last_line = vim.api.nvim_buf_get_lines(buf, last_line_idx - 1, last_line_idx, false)[1] or ""
-    
+
     if last_line == "" and last_line_idx == 1 then
         vim.api.nvim_buf_set_lines(buf, 0, -1, false, lines)
     else
         lines[1] = last_line .. lines[1]
         vim.api.nvim_buf_set_lines(buf, last_line_idx - 1, last_line_idx, false, lines)
     end
-    
+
     -- Scroll to bottom and force redraw
     if M.state.winid and vim.api.nvim_win_is_valid(M.state.winid) then
         local new_last_line = vim.api.nvim_buf_line_count(buf)
@@ -92,7 +92,7 @@ local function start_loading()
 
     append_to_chat("**LocalNest AI**: ")
     local line_count = vim.api.nvim_buf_line_count(buf)
-    
+
     loading_timer = vim.loop.new_timer()
     loading_timer:start(0, 100, vim.schedule_wrap(function()
         if not vim.api.nvim_buf_is_valid(buf) then
@@ -124,7 +124,7 @@ local function llama_complete_stream(prompt, callback)
 
     local first_chunk = true
     local full_response = ""
-    
+
     http.post(url, body, function(err, chunk)
         if err then
             stop_loading()
@@ -159,10 +159,10 @@ end
 function M.ask(question)
     open_floating_window("LocalNest AI")
     start_loading()
-    
+
     local system_prompt = config.get("chat.system_prompt")
     local full_prompt = string.format("%s\n\n### User:\n%s\n\n### Assistant:\n", system_prompt, question)
-    
+
     llama_complete_stream(full_prompt)
 end
 
@@ -191,7 +191,7 @@ function M.ask_on_selection()
 
     vim.ui.input({ prompt = "LocalNest question: " }, function(input)
         if not input or input == "" then return end
-        
+
         local question = string.format("Code:\n```%s\n%s\n```\n\nQuestion: %s", vim.bo.filetype, selection, input)
         M.ask(question)
     end)
@@ -238,7 +238,7 @@ function M.slash(command)
 
     local ft = vim.bo.filetype
     local ctx = context.gather()
-    
+
     local prompt
     if command == "explain" then
         prompt = string.format(prompts.explain_template, ft, content)
@@ -252,7 +252,7 @@ function M.slash(command)
         vim.notify("Unknown slash command: " .. command, vim.log.levels.ERROR)
         return
     end
-    
+
     M.ask(prompt)
 end
 
