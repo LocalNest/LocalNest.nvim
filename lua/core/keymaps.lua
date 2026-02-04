@@ -64,7 +64,7 @@ map('n', '<leader>0', vim.diagnostic.open_float, { desc = 'Show diagnostic under
 local localnest_chat = require("localnest.chat")
 local localnest_fim  = require("localnest.fim")
 
--- FIM: inline completion (insert only is fine)
+-- FIM: inline completion
 map("i", "<C-x>", function()
   localnest_fim.trigger()
 end, vim.tbl_extend("force", opts, { desc = "LocalNest: FIM completion" }))
@@ -77,14 +77,26 @@ map("i", "<C-d>", function()
   localnest_fim.dismiss()
 end, vim.tbl_extend("force", opts, { desc = "LocalNest: Dismiss FIM" }))
 
--- Chat prefix: <C-o> works in both normal + visual
+-- Chat commands
+map({ "n", "v" }, "<C-o>c", function()
+    vim.ui.input({ prompt = "Chat with LocalNest: " }, function(input)
+        if input and input ~= "" then localnest_chat.ask(input) end
+    end)
+end, vim.tbl_extend("force", opts, { desc = "LocalNest: Open chat" }))
+
 map({ "n", "v" }, "<C-o>x", function()
   localnest_chat.ask_on_selection()
 end, vim.tbl_extend("force", opts, { desc = "LocalNest: Ask about selection" }))
 
 map({ "n", "v" }, "<C-o>f", function()
   localnest_chat.ask_on_file()
-end, vim.tbl_extend("force", opts, { desc = "LocalNest: Analyze file (LocalNest)" }))
+end, vim.tbl_extend("force", opts, { desc = "LocalNest: Analyze file" }))
+
+-- Slash commands
+map({ "n", "v" }, "<leader>ae", function() localnest_chat.slash("explain") end, { desc = "LocalNest: Explain code" })
+map({ "n", "v" }, "<leader>af", function() localnest_chat.slash("fix") end, { desc = "LocalNest: Fix code" })
+map({ "n", "v" }, "<leader>ar", function() localnest_chat.slash("refactor") end, { desc = "LocalNest: Refactor code" })
+map({ "n", "v" }, "<leader>at", function() localnest_chat.slash("test") end, { desc = "LocalNest: Generate tests" })
 
 -- Insert + normal: @this inline block
 map({ "i", "n" }, "<C-o>t", function()

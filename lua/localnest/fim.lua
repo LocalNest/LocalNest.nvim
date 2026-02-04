@@ -19,8 +19,14 @@ end
 local function show_ghost(bufnr, lnum, col, text)
     api.nvim_buf_clear_namespace(bufnr, ns_fim, 0, -1)
 
+    if not text or text == "" then return end
+    
+    -- Only show the first line of the suggestion
+    local first_line = text:match("([^\n\r]*)")
+    if not first_line or first_line == "" then return end
+
     local opts = {
-        virt_text = { { text, "Comment" } },
+        virt_text = { { first_line, "Comment" } },
         virt_text_pos = vim.fn.has("nvim-0.10") == 1 and "inline" or "eol",
     }
 
@@ -30,7 +36,7 @@ local function show_ghost(bufnr, lnum, col, text)
         bufnr = bufnr,
         lnum = lnum,
         col = col,
-        text = text,
+        text = first_line,
         mark_id = id,
     }
 end
@@ -83,13 +89,7 @@ function M.trigger()
         end
 
         suggestion = suggestion:gsub("^%s+", "")
-        local first_line = suggestion:match("([^\n\r]*)")
-        if not first_line or first_line == "" then
-            clear_state()
-            return
-        end
-
-        show_ghost(bufnr, lnum, col, first_line)
+        show_ghost(bufnr, lnum, col, suggestion)
     end)
 end
 
