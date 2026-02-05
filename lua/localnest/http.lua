@@ -25,7 +25,7 @@ function M.post(url, body, callback, opts)
     }, {
         on_stdout = function(_, data)
             if not data then
-                vim.notify("data was NONE", vim.log.levels.WARN)
+                vim.notify("HTTP Warning: No data received", vim.log.levels.WARN)
                 return
             end
             if not stream then
@@ -56,11 +56,9 @@ function M.post(url, body, callback, opts)
         end,
         on_exit = function(_, exit_code)
             if not stream then
-                vim.notify("Non Streaming result found: " .. exit_code, vim.log.levels.INFO)
                 if full_response ~= "" then
                     local ok, decoded = pcall(vim.json.decode, full_response)
                     if ok then
-                        vim.notify("Full Response Decoded", vim.log.levels.INFO)
                         vim.schedule(function() callback(nil, decoded) end)
                     else
                         vim.notify("Error Decoding Non Stream Result: " .. full_response, vim.log.levels.WARN)

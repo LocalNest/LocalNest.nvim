@@ -12,9 +12,12 @@ local defaults = {
   fim = {
     enabled = true,
     auto_trigger = true,
-    max_tokens = 32,
-    temperature = 0.3,
-    stop_sequences = { "```" },
+    max_tokens = 128,
+    temperature = 0.0,
+    top_p = 0.9,
+    top_k = 40,
+    repeat_penalty = 1.1,
+    stop_sequences = { "```", "\n\n" },
     -- Constraints
     only_in_code = true,
     code_filetypes = { "lua", "rust", "python", "go", "typescript" },
