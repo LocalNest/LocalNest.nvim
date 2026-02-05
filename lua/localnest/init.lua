@@ -10,6 +10,9 @@ function M.setup(user_config)
   -- Merge user config
   config.setup(user_config or {})
 
+  -- Setup auto-triggering
+  fim.setup_autocmds()
+
   vim.notify("LocalNest AI plugin loaded", vim.log.levels.INFO)
 end
 

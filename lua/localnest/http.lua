@@ -2,120 +2,85 @@
 
 local M = {}
 
+--- POST request with optional streaming using curl CLI
+--- @param url string
+--- @param body table
+--- @param callback function(err, response) Called once for non-stream, or for each chunk/event if stream=true
+--- @param opts table|nil
 function M.post(url, body, callback, opts)
-    opts                   = opts or {}
-    local timeout          = opts.timeout or 30000
+    opts = opts or {}
+    local timeout = opts.timeout or 30000
+    local stream = body.stream or false
 
-    local uv               = vim.loop
-    local req              = uv.new_tcp()
+    local buffer = ""
+    local full_response = ""
 
-    -- Parse URL
-    local host, port, path = url:match("http://([^:/?]+):?(%d*)(/.*)")
-    port                   = tonumber(port) or 80
-    path                   = path or "/"
-
-    local body_str         = vim.fn.json_encode(body)
-    local http_request     = string.format(
-        "POST %s HTTP/1.1\r\nHost: %s:%d\r\nContent-Type: application/json\r\nContent-Length: %d\r\nConnection: close\r\n\r\n%s",
-        path, host, port, #body_str, body_str
-    )
-
-    local response_data    = ""
-    local timer            = uv.new_timer()
-
-    -- Safe callback: always back on main loop
-    local function safe_callback(err, res)
-        vim.schedule(function()
-            callback(err, res)
-        end)
-    end
-
-    local function cleanup()
-        timer:close()
-        if req and not req:is_closing() then
-            req:shutdown()
-            req:close()
-        end
-    end
-
-    local function parse_response()
-        -- If headers are present, strip them once
-        local header_end = response_data:find("\r\n\r\n")
-        local body_part = header_end and response_data:sub(header_end + 4) or response_data
-
-        -- DEBUG: 
-        -- vim.fn.writefile({ body_part }, "/tmp/localnest_http_body.json")
-
-        -- Use vim.json.decode, not vim.fn.json_decode
-        local ok, decoded = pcall(vim.json.decode, body_part)
-        if ok and type(decoded) == "table" then
-            return decoded
-        end
-
-        return nil
-    end
-
-    local function on_error(err)
-        cleanup()
-        safe_callback(err, nil)
-    end
-
-    local function on_read(err, data)
-        if err then
-            on_error(err)
-            return
-        end
-
-        if data then
-            response_data = response_data .. data
-        else
-            -- EOF
-            timer:stop()
-            cleanup()
-            local parsed = parse_response()
-            if parsed then
-                safe_callback(nil, parsed)
-            else
-                safe_callback("Failed to parse response", nil)
-            end
-        end
-    end
-
-    local function on_connect(err)
-        if err then
-            on_error(err)
-            return
-        end
-
-        req:write(http_request, function(werr)
-            if werr then
-                on_error(werr)
+    local job_id = vim.fn.jobstart({
+        "curl", "-sN",
+        "-X", "POST",
+        url,
+        "-H", "Content-Type: application/json",
+        "-d", "@-",
+        "--max-time", tostring(timeout / 1000)
+    }, {
+        on_stdout = function(_, data)
+            if not data then
+                vim.notify("HTTP Warning: No data received", vim.log.levels.WARN)
                 return
             end
-            req:read_start(on_read)
-        end)
+            if not stream then
+                full_response = full_response .. table.concat(data, "\n")
+                return
+            end
+
+            -- Streaming logic
+            for i, chunk in ipairs(data) do
+                buffer = buffer .. chunk
+                if i < #data then
+                    -- We hit a newline
+                    local line = vim.trim(buffer)
+                    if line ~= "" then
+                        local json_str = line:match("^data: (.*)$") or line
+                        if json_str == "[DONE]" then
+                            vim.schedule(function() callback(nil, nil) end)
+                        else
+                            local ok, decoded = pcall(vim.json.decode, json_str)
+                            if ok then
+                                vim.schedule(function() callback(nil, decoded) end)
+                            end
+                        end
+                    end
+                    buffer = ""
+                end
+            end
+        end,
+        on_exit = function(_, exit_code)
+            if not stream then
+                if full_response ~= "" then
+                    local ok, decoded = pcall(vim.json.decode, full_response)
+                    if ok then
+                        vim.schedule(function() callback(nil, decoded) end)
+                    else
+                        vim.notify("Error Decoding Non Stream Result: " .. full_response, vim.log.levels.WARN)
+                        vim.schedule(function() callback("Failed to decode JSON: " .. full_response, nil) end)
+                    end
+                else
+                    vim.notify("Error, Empty full_response", vim.log.levels.WARN)
+                    vim.schedule(function() callback("Empty response received", nil) end)
+                end
+            else
+                -- Signal end of stream
+                vim.schedule(function() callback(nil, nil) end)
+            end
+        end
+    })
+
+    if job_id > 0 then
+        vim.fn.chansend(job_id, vim.json.encode(body))
+        vim.fn.chanclose(job_id, "stdin")
+    else
+        callback("Failed to start curl", nil)
     end
-
-    -- Timeout
-    timer:start(timeout, 0, function()
-        on_error("Request timeout")
-    end)
-
-    -- Resolve DNS and connect
-    uv.getaddrinfo(host, port, { family = "inet" }, function(err, res)
-        if err then
-            on_error(err)
-            return
-        end
-
-        if not res or #res == 0 then
-            on_error("DNS resolution failed")
-            return
-        end
-
-        local addr = res[1]
-        req:connect(addr.addr, addr.port, on_connect)
-    end)
 end
 
 return M

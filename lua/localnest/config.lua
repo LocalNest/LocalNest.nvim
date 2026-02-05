@@ -9,20 +9,18 @@ local defaults = {
     timeout = 30000,  -- ms
   },
 
-  models = {
-    fim = "qwen2.5-coder-7b.ollama.gguf",
-    chat = "qwen2.5-coder-7b.ollama.gguf",
-  },
-
   fim = {
     enabled = true,
     auto_trigger = true,
-    max_tokens = 32,
-    temperature = 0.1,
-    stop_sequences = { "\n\n", "```" },
+    max_tokens = 128,
+    temperature = 0.0,
+    top_p = 0.9,
+    top_k = 40,
+    repeat_penalty = 1.1,
+    stop_sequences = { "```", "\n\n" },
     -- Constraints
     only_in_code = true,
-    code_filetypes = { "lua", "rust", "python", "go", "typescript", "javascript", "cpp", "c" },
+    code_filetypes = { "lua", "rust", "python", "go", "typescript" },
     min_prefix_len = 3,
     reject_short_results = true,
   },

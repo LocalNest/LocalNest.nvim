@@ -9,9 +9,39 @@ M.chat_system = [[You are a helpful coding assistant created by LocalNest. You h
 - Code refactoring and optimization
 - Explaining code and concepts
 
-When asked about code, be precise, concise, and provide clear examples. Always explain your reasoning.]]
+When asked about code, be precise, concise, and provide clear examples. Always explain your reasoning.
+Use markdown for code blocks with appropriate language tags.
+If it's helpful, you can call tools using the following format:
+<tool_call>
+{"name": "tool_name", "arguments": {"arg1": "val1"}}
+</tool_call>]]
 
-M.fim_system = [[You are a code completion assistant. Complete the code fragment provided, continuing the context naturally and correctly. Only return the completion itself without any explanations or additional text.]]
+M.explain_template = [[Explain the following code in detail, focusing on logic and potential edge cases:
+
+```%s
+%s
+```]]
+
+M.fix_template = [[I'm having an issue with this code. Please identify any bugs and provide a fixed version:
+
+```%s
+%s
+```
+
+Context:
+%s]]
+
+M.refactor_template = [[Refactor the following code to improve readability, efficiency, or maintainability. Explain your changes:
+
+```%s
+%s
+```]]
+
+M.unit_test_template = [[Generate comprehensive unit tests for the following code:
+
+```%s
+%s
+```]]
 
 M.file_context_template = [[
 Here is the full file context:
@@ -22,20 +52,11 @@ Here is the full file context:
 
 Question: {question}]]
 
-M.selection_template = [[Question: {selection}]]
-
-M.inline_template = [[Question: {question}]]
-
 --- Build a chat prompt with system and messages
-function M.build_chat_prompt(system_prompt, question)
+function M.build_chat_prompt(system_prompt, messages)
   return {
     system = system_prompt,
-    messages = {
-      {
-        role = "user",
-        content = question,
-      },
-    },
+    messages = messages,
   }
 end
 

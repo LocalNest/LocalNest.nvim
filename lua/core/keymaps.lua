@@ -64,7 +64,7 @@ map('n', '<leader>0', vim.diagnostic.open_float, { desc = 'Show diagnostic under
 local localnest_chat = require("localnest.chat")
 local localnest_fim  = require("localnest.fim")
 
--- FIM: inline completion (insert only is fine)
+-- FIM: inline completion (Insert mode)
 map("i", "<C-x>", function()
   localnest_fim.trigger()
 end, vim.tbl_extend("force", opts, { desc = "LocalNest: FIM completion" }))
@@ -77,17 +77,26 @@ map("i", "<C-d>", function()
   localnest_fim.dismiss()
 end, vim.tbl_extend("force", opts, { desc = "LocalNest: Dismiss FIM" }))
 
--- Chat prefix: <C-o> works in both normal + visual
-map({ "n", "v" }, "<C-o>x", function()
-  localnest_chat.ask_on_selection()
-end, vim.tbl_extend("force", opts, { desc = "LocalNest: Ask about selection" }))
+-- Grouped AI Commands (Leader and Ctrl-O)
+local wk = require("which-key")
 
-map({ "n", "v" }, "<C-o>f", function()
-  localnest_chat.ask_on_file()
-end, vim.tbl_extend("force", opts, { desc = "LocalNest: Analyze file (LocalNest)" }))
-
--- Insert + normal: @this inline block
-map({ "i", "n" }, "<C-o>t", function()
-  localnest_chat.ask_inline()
-end, vim.tbl_extend("force", opts, { desc = "LocalNest: Ask via @this" }))
+wk.add({
+  { "<leader>a", group = "AI (LocalNest)" },
+  -- Slash Commands
+  { "<leader>ae", function() localnest_chat.slash("explain") end, desc = "Explain Code" },
+  { "<leader>af", function() localnest_chat.slash("fix") end, desc = "Fix Code" },
+  { "<leader>ar", function() localnest_chat.slash("refactor") end, desc = "Refactor Code" },
+  { "<leader>at", function() localnest_chat.slash("test") end, desc = "Generate Tests" },
+  
+  -- Chat Commands
+  { "<C-o>", group = "AI Chat" },
+  { "<C-o>c", function()
+    vim.ui.input({ prompt = "Chat with LocalNest: " }, function(input)
+      if input and input ~= "" then localnest_chat.ask(input) end
+    end)
+  end, desc = "Open Chat" },
+  { "<C-o>x", function() localnest_chat.ask_on_selection() end, desc = "Ask about Selection" },
+  { "<C-o>f", function() localnest_chat.ask_on_file() end, desc = "Analyze File" },
+  { "<C-o>t", function() localnest_chat.ask_inline() end, desc = "Ask via @this block" },
+})
 
