@@ -84,6 +84,32 @@ require('localnest').setup({
 })
 ```
 
+## 🛠️ Integrated Development Environment
+
+LocalNest is more than just an AI plugin; it's a fully-equipped IDE configured for high-performance engineering.
+
+### Language Support (LSP)
+Full IDE capabilities for:
+- **Rust** (via `rust-tools.nvim`)
+- **Go** (via `go.nvim`)
+- **Python**, **TypeScript/JS**, **Lua**, **Bash**, **YAML**, **JSON**, **Docker*e*
+- **Cap'n Proto** (dedicated support)
+
+### Core Stack
+- **Modern UI**: `tokyonight` theme with `lualine` status and `dashboard-nvim` splash screen.
+- **Search & Navigation**: `telescope.nvim` with `fzf-native` for lightning-fast file and symbol searches.
+- **Git Integration**: `vim-fugitive` for management and `gitsigns.nvim` for inline diffs.
+- **Productivity**: 
+  - `which-key.nvim`: Interactive command discovery.
+  - `toggleterm.nvim`: Integrated terminal management.
+  - `auto-session`: Persistent workspace sessions.
+  - `nvim-surround` & `Comment.nvim`: Advanced text manipulation.
+
+### Quality of Life Tweaks
+- **Native Navigation**: Seamless window jumping with `<C-h/j/k/l>`.
+- **System Clipboard**: Unified copy/paste with `Ctrl-c` and `Ctrl-v`.
+- **Smooth Interaction**: Hardware-accelerated scrolling with `neoscroll.nvim`.
+
 ## Requirements
 
 - Neovim 0.10+
