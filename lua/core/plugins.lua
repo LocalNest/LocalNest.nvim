@@ -1,48 +1,47 @@
-local ensure_packer = function()
-    local install_path = vim.fn.stdpath('data') .. '/site/pack/packer/start/packer.nvim'
-    if vim.fn.empty(vim.fn.glob(install_path)) > 0 then
-        vim.fn.system({
-            'git', 'clone', '--depth', '1',
-            'https://github.com/wbthomason/packer.nvim',
-            install_path
-        })
-        vim.cmd [[packadd packer.nvim]]
-        return true
-    end
-    return false
+local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
+if not vim.loop.fs_stat(lazypath) then
+  vim.fn.system({
+    "git",
+    "clone",
+    "--filter=blob:none",
+    "https://github.com/folke/lazy.nvim.git",
+    "--branch=stable", -- latest stable release
+    lazypath,
+  })
 end
+vim.opt.rtp:prepend(lazypath)
 
-local packer_bootstrap = ensure_packer()
-
-return require('packer').startup(function(use)
-    -- Package manager
-    use 'wbthomason/packer.nvim'
-
+require("lazy").setup({
     -- Language stuff
-    use("neovim/nvim-lspconfig")
-    use("hrsh7th/nvim-cmp") -- Autocompletion framework
-    use({
-        -- cmp LSP completion
+    "neovim/nvim-lspconfig",
+    "hrsh7th/nvim-cmp", -- Autocompletion framework
+    {
         "hrsh7th/cmp-nvim-lsp",
-        -- cmp Snippet completion
+        dependencies = { "hrsh7th/nvim-cmp" },
+    },
+    {
         "hrsh7th/cmp-vsnip",
-        -- cmp Path completion
+        dependencies = { "hrsh7th/nvim-cmp" },
+    },
+    {
         "hrsh7th/cmp-path",
+        dependencies = { "hrsh7th/nvim-cmp" },
+    },
+    {
         "hrsh7th/cmp-buffer",
-        after = { "hrsh7th/nvim-cmp" },
-        requires = { "hrsh7th/nvim-cmp" },
-    })
+        dependencies = { "hrsh7th/nvim-cmp" },
+    },
 
-    use("nvim-lua/popup.nvim")
+    "nvim-lua/popup.nvim",
     -- Snippet engine
-    use('hrsh7th/vim-vsnip')
+    'hrsh7th/vim-vsnip',
     -- Adds extra functionality over rust analyzer
-    use("simrat39/rust-tools.nvim")
+    "simrat39/rust-tools.nvim",
 
     -- Go development
-    use {
+    {
         'ray-x/go.nvim',
-        requires = {
+        dependencies = {
             'ray-x/guihua.lua',
             'nvim-treesitter/nvim-treesitter',
         },
@@ -52,76 +51,76 @@ return require('packer').startup(function(use)
         event = { "CmdlineEnter" },
         ft = { "go", 'gomod' },
         build = ':lua require("go.install").update_all_sync()'
-    }
+    },
 
     -- Better diagnostics
-    use {
+    {
         "folke/trouble.nvim",
-        requires = "nvim-tree/nvim-web-devicons",
-    }
+        dependencies = "nvim-tree/nvim-web-devicons",
+    },
 
     -- File explorer
-    use {
+    {
         'nvim-tree/nvim-tree.lua',
-        requires = {
+        dependencies = {
             'nvim-tree/nvim-web-devicons',
         },
-    }
+    },
 
     -- Core Utilities
-    use 'nvim-lua/plenary.nvim'
-    use 'nvim-tree/nvim-web-devicons'
-    use 'windwp/nvim-autopairs'
+    'nvim-lua/plenary.nvim',
+    'nvim-tree/nvim-web-devicons',
+    'windwp/nvim-autopairs',
 
     -- Treesitter
-    use 'nvim-treesitter/nvim-treesitter'
-    use {
+    'nvim-treesitter/nvim-treesitter',
+    {
         'nvim-telescope/telescope-fzf-native.nvim',
-        run = 'cmake -S. -Bbuild -DCMAKE_BUILD_TYPE=Release && cmake --build build --config Release',
-    }
+        build = 'make',
+    },
     -- Telescope
-    use 'nvim-telescope/telescope.nvim'
+    'nvim-telescope/telescope.nvim',
 
     -- Github
-    use 'j-hui/fidget.nvim'
-    use 'numToStr/Comment.nvim'
-    use 'tpope/vim-fugitive'
-    use 'lewis6991/gitsigns.nvim'
+    'j-hui/fidget.nvim',
+    'numToStr/Comment.nvim',
+    'tpope/vim-fugitive',
+    'lewis6991/gitsigns.nvim',
 
     -- Themes
-    use 'stevearc/dressing.nvim'
-    use {
+    'stevearc/dressing.nvim',
+    {
         'glepnir/dashboard-nvim',
-        requires = { 'nvim-tree/nvim-web-devicons' },
+        dependencies = { 'nvim-tree/nvim-web-devicons' },
         config = function()
             require('plugins.dashboard')
         end
-    }
-    use 'lvimuser/lsp-inlayhints.nvim'
-    use 'folke/tokyonight.nvim'
+    },
+    'lvimuser/lsp-inlayhints.nvim',
+    'folke/tokyonight.nvim',
 
     -- Additional productivity plugins
-    use {
+    {
         'folke/which-key.nvim',
         config = function()
             require('which-key').setup()
         end
-    }
+    },
 
     -- Better UI
-    use {
+    {
         'nvim-lualine/lualine.nvim',
-        requires = { 'nvim-tree/nvim-web-devicons', opt = true }
-    }
+        dependencies = { 'nvim-tree/nvim-web-devicons' }
+    },
 
     -- Indent guides
-    use 'lukas-reineke/indent-blankline.nvim'
+    'lukas-reineke/indent-blankline.nvim',
 
     -- Better terminal
-    use { "akinsho/toggleterm.nvim", tag = '*' }
+    { "akinsho/toggleterm.nvim", version = '*' },
 
     -- Session management
-    use {
+    {
         'rmagatti/auto-session',
         config = function()
             require("auto-session").setup {
@@ -129,29 +128,21 @@ return require('packer').startup(function(use)
                 auto_session_suppress_dirs = { "~/", "~/Projects", "~/Downloads", "/" },
             }
         end
-    }
+    },
 
     -- Formatting
-    use 'jose-elias-alvarez/null-ls.nvim'
+    'jose-elias-alvarez/null-ls.nvim',
 
     -- Better surround
-    use 'kylechui/nvim-surround'
+    'kylechui/nvim-surround',
 
     -- Smooth scrolling
-    use 'karb94/neoscroll.nvim'
+    'karb94/neoscroll.nvim',
 
-
-
-
-    use {
-        vim.fn.stdpath('config') .. '/lua/localnest',
+    {
+        dir = vim.fn.stdpath('config') .. '/lua/localnest',
         config = function()
             require('localnest').setup({})
         end,
-    }
-
-
-    if packer_bootstrap then
-        require('packer').sync()
-    end
-end)
+    },
+})

@@ -9,8 +9,8 @@ require('core.keymaps')
 -- Initialize plugin manager and plugins
 require('core.plugins')
 
--- Load plugin configurations AFTER packer
-vim.cmd [[packadd packer.nvim]]
+-- Load plugin configurations AFTER plugins are loaded
+
 vim.schedule(function()
     require('nvim-web-devicons').setup()
     require('plugins.dashboard')

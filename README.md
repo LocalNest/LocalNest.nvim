@@ -25,10 +25,10 @@ This plugin is the IDE/Coding Assistant component of the [LocalNest](https://git
 
 ## Installation
 
-Using [packer.nvim](https://github.com/wbthomason/packer.nvim):
+Using [lazy.nvim](https://github.com/folke/lazy.nvim):
 
 ```lua
-use {
+{
     'LocalNest/LocalNest.nvim',
     config = function()
         require('localnest').setup({
