@@ -24,3 +24,13 @@ vim.opt.wrap = false
 vim.opt.formatoptions:remove('c')
 vim.opt.formatoptions:remove('r')
 vim.opt.formatoptions:remove('o')
+
+-- Persistent undo
+vim.opt.undofile = true
+
+-- Split behavior
+vim.opt.splitright = true
+vim.opt.splitbelow = true
+
+-- Session options
+vim.opt.sessionoptions = "buffers,curdir,tabpages,winsize,help,globals,skiprtp,folds"

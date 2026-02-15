@@ -66,8 +66,8 @@ local localnest_fim  = require("localnest.fim")
 
 -- FIM: inline completion (Insert mode)
 map("i", "<C-x>", function()
-  localnest_fim.trigger()
-end, vim.tbl_extend("force", opts, { desc = "LocalNest: FIM completion" }))
+  localnest_fim.toggle()
+end, vim.tbl_extend("force", opts, { desc = "LocalNest: Toggle FIM" }))
 
 map("i", "<C-z>", function()
   localnest_fim.accept()
@@ -88,6 +88,31 @@ wk.add({
   { "<leader>ar", function() localnest_chat.slash("refactor") end, desc = "Refactor Code" },
   { "<leader>at", function() localnest_chat.slash("test") end, desc = "Generate Tests" },
   
+  -- DAP Keymaps (User version)
+  { "<leader>d", group = "Debug" },
+  { "<leader>db", function() require("dap").toggle_breakpoint() end, desc = "Toggle Breakpoint" },
+  { "<leader>ds", function() require("dap").continue() end, desc = "Debug Start/Continue" },
+  { "<leader>dd", function() require("dap").step_over() end, desc = "Step Over" },
+  { "<leader>di", function() require("dap").step_into() end, desc = "Step Into" },
+  { "<leader>do", function() require("dap").step_out() end, desc = "Step Out" },
+  { "<leader>dt", function() require("dap").terminate() end, desc = "Terminate" },
+  { "<leader>du", function() require("dapui").toggle() end, desc = "Toggle DAP UI" },
+
+  -- Aerial (Outline)
+  { "<leader>o", "<cmd>AerialToggle! left<CR>", desc = "Code Outline" },
+
+  -- Neotest
+  { "<leader>t", group = "Test" },
+  { "<leader>tt", function() require("neotest").run.run() end, desc = "Run Nearest Test" },
+  { "<leader>tf", function() require("neotest").run.run(vim.fn.expand("%")) end, desc = "Run Current File" },
+  { "<leader>ts", function() require("neotest").run.stop() end, desc = "Stop Test" },
+  { "<leader>to", function() require("neotest").output.open({ enter = true }) end, desc = "Show Output" },
+
+  -- LSP extensions
+  { "gD", vim.lsp.buf.declaration, desc = "Go to Declaration" },
+  { "gi", vim.lsp.buf.implementation, desc = "Go to Implementation" },
+  { "gt", vim.lsp.buf.type_definition, desc = "Go to Type Definition" },
+
   -- Chat Commands
   { "<C-o>", group = "AI Chat" },
   { "<C-o>c", function()

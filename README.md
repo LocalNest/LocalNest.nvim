@@ -49,7 +49,7 @@ LocalNest uses `which-key` for easy discovery.
 | Shortcut | Action |
 | --- | --- |
 | `Auto` | Suggestions appear after a short pause |
-| `<C-x>` | Manually trigger completion |
+| `<C-x>` | **Toggle** FIM on/off |
 | `<C-z>` | **Accept** suggestion |
 | `<C-d>` | **Dismiss** suggestion |
 
@@ -68,6 +68,18 @@ LocalNest uses `which-key` for easy discovery.
 | `<C-o>x` | Ask about Selection |
 | `<C-o>f` | Analyze Full File |
 | `<C-o>t` | Ask via `@this` block |
+
+### Engineering Tools (`<leader>`)
+| Shortcut | Action |
+| --- | --- |
+| `<leader>db` | Toggle Breakpoint |
+| `<leader>ds` | Debug Start/Continue |
+| `<leader>dd` | Step Over |
+| `<leader>du` | Toggle Debug UI |
+| `<leader>tt` | Run Nearest Test |
+| `<leader>tf` | Run Current File |
+| `<leader>to` | Show Test Output |
+| `<leader>o` | Toggle Code Outline |
 
 ## Configuration
 
@@ -97,13 +109,16 @@ LocalNest is more than just an AI plugin; it's a fully-equipped IDE configured f
 Full IDE capabilities for:
 - **Rust** (via `rust-tools.nvim`)
 - **Go** (via `go.nvim`)
-- **Python**, **TypeScript/JS**, **Lua**, **Bash**, **YAML**, **JSON**, **Docker*e*
+- **Python**, **TypeScript/JS**, **Lua**, **Bash**, **YAML**, **JSON**, **Docker**
 - **Cap'n Proto** (dedicated support)
 
 ### Core Stack
-- **Modern UI**: `tokyonight` theme with `lualine` status and `dashboard-nvim` splash screen.
-- **Search & Navigation**: `telescope.nvim` with `fzf-native` for lightning-fast file and symbol searches.
+- **Modern UI**: `tokyonight` theme, `lualine` status, `bufferline` tabs, and `dashboard-nvim` splash screen.
+- **Search & Navigation**: `telescope.nvim` for fuzzy search, `aerial.nvim` for code outline.
 - **Git Integration**: `vim-fugitive` for management and `gitsigns.nvim` for inline diffs.
+- **Tool Management**: `mason.nvim` for automated LSP, DAP, and linter installation.
+- **Debugger**: `nvim-dap` with full UI and virtual text support.
+- **Test Runner**: `neotest` for integrated testing in Go, Rust, and Python.
 - **Productivity**: 
   - `which-key.nvim`: Interactive command discovery.
   - `toggleterm.nvim`: Integrated terminal management.
@@ -114,6 +129,8 @@ Full IDE capabilities for:
 - **Native Navigation**: Seamless window jumping with `<C-h/j/k/l>`.
 - **System Clipboard**: Unified copy/paste with `Ctrl-c` and `Ctrl-v`.
 - **Smooth Interaction**: Hardware-accelerated scrolling with `neoscroll.nvim`.
+- **Persistent History**: Global undo history saved across restarts.
+- **Split Management**: Intuitive split behavior (right/below).
 
 ## Requirements
 

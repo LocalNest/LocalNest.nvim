@@ -8,6 +8,17 @@ local M      = {}
 local ns_fim = api.nvim_create_namespace("localnest_fim")
 
 M.state      = M.state or {}
+M.enabled    = config.get("fim.enabled") or true
+
+function M.toggle()
+    M.enabled = not M.enabled
+    local status = M.enabled and "enabled" or "disabled"
+    vim.notify("LocalNest FIM " .. status, vim.log.levels.INFO)
+    
+    if not M.enabled then
+        M.dismiss()
+    end
+end
 
 local function clear_state()
     if M.state.bufnr and api.nvim_buf_is_valid(M.state.bufnr) then
@@ -60,6 +71,8 @@ local function show_ghost(bufnr, lnum, col, text)
 end
 
 function M.trigger()
+    if not M.enabled then return end
+
     local bufnr        = api.nvim_get_current_buf()
     local pos          = api.nvim_win_get_cursor(0)
     local lnum         = pos[1] - 1 -- 0-based
@@ -207,7 +220,7 @@ function M.setup_autocmds()
         group = group,
         pattern = "*",
         callback = function()
-            if not config.get("fim.auto_trigger") then return end
+            if not config.get("fim.auto_trigger") or not M.enabled then return end
             
             timer:stop()
             timer:start(500, 0, vim.schedule_wrap(function()

@@ -19,6 +19,11 @@ vim.schedule(function()
     require('plugins.lsp')
     require('plugins.telescope')
     require('plugins.treesitter')
+    require('plugins.mason')
+    require('plugins.dap')
+    require('plugins.aerial')
+    require('plugins.bufferline')
+    require('plugins.neotest')
     require('plugins.localnest')
     -- Theme
     vim.cmd [[colorscheme tokyonight]]

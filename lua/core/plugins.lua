@@ -139,6 +139,50 @@ require("lazy").setup({
     -- Smooth scrolling
     'karb94/neoscroll.nvim',
 
+    -- Mason for tool management
+    {
+        "williamboman/mason.nvim",
+        dependencies = { "williamboman/mason-lspconfig.nvim" },
+    },
+
+    -- DAP (Debugger)
+    {
+        "mfussenegger/nvim-dap",
+        dependencies = {
+            "rcarriga/nvim-dap-ui",
+            "theHamsta/nvim-dap-virtual-text",
+            "nvim-neotest/nvim-nio",
+        },
+    },
+
+    -- Aerial (Code Outline)
+    {
+        "stevearc/aerial.nvim",
+        dependencies = { "nvim-tree/nvim-web-devicons", "nvim-treesitter/nvim-treesitter" },
+    },
+
+    -- Bufferline (Tabs)
+    {
+        'akinsho/bufferline.nvim',
+        version = "*",
+        dependencies = 'nvim-tree/nvim-web-devicons'
+    },
+
+    -- Neotest
+    {
+        "nvim-neotest/neotest",
+        dependencies = {
+            "nvim-neotest/nvim-nio",
+            "nvim-lua/plenary.nvim",
+            "antlr/antlr4",
+            "nvim-treesitter/nvim-treesitter",
+            -- Adapters
+            "nvim-neotest/neotest-go",
+            "rouge8/neotest-rust",
+            "nvim-neotest/neotest-python",
+        }
+    },
+
     {
         dir = vim.fn.stdpath('config') .. '/lua/localnest',
         config = function()
