@@ -78,7 +78,14 @@ local function show_ghost(bufnr, lnum, col, text)
         cmp.setup({ experimental = { ghost_text = false } })
     end
 
-    local id = api.nvim_buf_set_extmark(bufnr, ns_fim, lnum, col, opts)
+    -- Ensure column is within bounds (in case buffer changed during async call)
+    local line_content = api.nvim_buf_get_lines(bufnr, lnum, lnum + 1, false)[1]
+    if not line_content or col > #line_content then
+        col = line_content and #line_content or 0
+    end
+
+    local ok, id = pcall(api.nvim_buf_set_extmark, bufnr, ns_fim, lnum, col, opts)
+    if not ok then return end
 
     M.state = {
         bufnr = bufnr,
