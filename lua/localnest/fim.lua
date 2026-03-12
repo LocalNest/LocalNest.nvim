@@ -245,10 +245,10 @@ function M.complete(prefix, suffix, callback, opts)
 
         local text = response.content
 
-        if not text or text == "" then
+        if type(text) ~= "string" or text == "" then
             -- Silent failure for auto-complete to avoid spamming
-            if not opts.max_tokens then
-                vim.notify("FIM error: empty or missing content", vim.log.levels.WARN)
+            if type(text) ~= "string" and not opts.max_tokens then
+                vim.notify("FIM error: empty or invalid content", vim.log.levels.WARN)
             end
             callback(nil)
             return

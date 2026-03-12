@@ -183,7 +183,7 @@ local function llama_chat_stream(messages, callback)
             content = chunk.message.content -- Ollama Chat
         end
 
-        if content then
+        if type(content) == "string" then
             full_response = full_response .. content
             append_to_chat(content)
         end
