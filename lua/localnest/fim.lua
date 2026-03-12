@@ -24,6 +24,16 @@ local function clear_state()
     if M.state.bufnr and api.nvim_buf_is_valid(M.state.bufnr) then
         api.nvim_buf_clear_namespace(M.state.bufnr, ns_fim, 0, -1)
     end
+
+    -- Restore cmp ghost text if we disabled it
+    if M._cmp_ghost_text ~= nil then
+        local has_cmp, cmp = pcall(require, "cmp")
+        if has_cmp then
+            cmp.setup({ experimental = { ghost_text = M._cmp_ghost_text } })
+        end
+        M._cmp_ghost_text = nil
+    end
+
     M.state = {}
 end
 
@@ -44,19 +54,28 @@ local function show_ghost(bufnr, lnum, col, text)
 
     if #lines == 0 then return end
 
+    local hl_group = "LocalNestFimGhost"
     local first_line = lines[1]
     local other_lines = {}
     for i = 2, #lines do
-        table.insert(other_lines, { { lines[i], "Comment" } })
+        table.insert(other_lines, { { lines[i], hl_group } })
     end
 
     local opts = {
-        virt_text = { { first_line, "Comment" } },
+        virt_text = { { first_line, hl_group } },
         virt_text_pos = vim.fn.has("nvim-0.10") == 1 and "inline" or "eol",
+        priority = 200, -- High priority to override other virtual text
     }
 
     if #other_lines > 0 then
         opts.virt_lines = other_lines
+    end
+
+    -- Conflict Resolution: Temporarily disable cmp ghost text if it exists
+    local has_cmp, cmp = pcall(require, "cmp")
+    if has_cmp and cmp.get_config().experimental.ghost_text then
+        M._cmp_ghost_text = cmp.get_config().experimental.ghost_text
+        cmp.setup({ experimental = { ghost_text = false } })
     end
 
     local id = api.nvim_buf_set_extmark(bufnr, ns_fim, lnum, col, opts)
@@ -70,58 +89,73 @@ local function show_ghost(bufnr, lnum, col, text)
     }
 end
 
-function M.trigger()
+function M.trigger_auto()
     if not M.enabled then return end
 
-    local bufnr        = api.nvim_get_current_buf()
-    local pos          = api.nvim_win_get_cursor(0)
-    local lnum         = pos[1] - 1 -- 0-based
-    local col          = pos[2]     -- 0-based byte index
+    local bufnr = api.nvim_get_current_buf()
+    local pos = api.nvim_win_get_cursor(0)
+    local lnum = pos[1] - 1
+    local col = pos[2]
 
-    -- Get all lines
-    local lines        = api.nvim_buf_get_lines(bufnr, 0, -1, false)
-    local total        = #lines
+    local lines = api.nvim_buf_get_lines(bufnr, 0, -1, false)
     local current_line = lines[lnum + 1] or ""
-
+    
+    -- Prefix: strictly lines before + current line up to cursor
     local before_lines = {}
-
-    -- lines strictly before current line
-    if lnum > 0 then
-        for i = 1, lnum do
-            table.insert(before_lines, lines[i])
-        end
-    end
-
-    -- current line up to cursor column
-    local before_current = current_line:sub(1, col)
-    table.insert(before_lines, before_current)
-
+    for i = 1, lnum do table.insert(before_lines, lines[i]) end
+    table.insert(before_lines, current_line:sub(1, col))
     local prefix = table.concat(before_lines, "\n")
 
-    local after_lines = {}
-
-    -- current line after cursor
-    local after_current = current_line:sub(col + 1)
-    table.insert(after_lines, after_current)
-
-    -- all lines after current line
-    if lnum + 2 <= total then
-        for i = lnum + 2, total do
-            table.insert(after_lines, lines[i])
-        end
-    end
-
+    -- Suffix: current line after cursor + subsequent lines
+    local after_lines = { current_line:sub(col + 1) }
+    for i = lnum + 2, #lines do table.insert(after_lines, lines[i]) end
     local suffix = table.concat(after_lines, "\n")
+
+    -- Auto mode: Tight tokens, strictly forward
+    local opts = {
+        max_tokens = 16,
+    }
 
     M.complete(prefix, suffix, function(suggestion)
         if not suggestion or suggestion == "" then
             clear_state()
             return
         end
-
+        
+        -- Strip prefix/whitespace to ensure no cursor jumping
         suggestion = suggestion:gsub("^%s+", "")
-        show_ghost(bufnr, lnum, col, suggestion)
-    end)
+        vim.schedule(function()
+            show_ghost(bufnr, lnum, col, suggestion)
+        end)
+    end, opts)
+end
+
+function M.trigger_manual()
+    if not M.enabled then return end
+
+    local bufnr = api.nvim_get_current_buf()
+    local pos = api.nvim_win_get_cursor(0)
+    local lnum = pos[1] - 1
+    local col = pos[2]
+
+    local lines = api.nvim_buf_get_lines(bufnr, 0, -1, false)
+    local prefix = table.concat(vim.list_slice(lines, 1, lnum), "\n") .. "\n" .. lines[lnum+1]:sub(1, col)
+    local suffix = lines[lnum+1]:sub(col + 1) .. "\n" .. table.concat(vim.list_slice(lines, lnum + 2), "\n")
+
+    M.complete(prefix, suffix, function(suggestion)
+        if not suggestion or suggestion == "" then
+            clear_state()
+            return
+        end
+        vim.schedule(function()
+            show_ghost(bufnr, lnum, col, suggestion)
+        end)
+    end, { max_tokens = config.get("fim.max_tokens") or 128 })
+end
+
+function M.trigger()
+    -- Compatibility wrapper or default to manual
+    M.trigger_manual()
 end
 
 function M.accept()
@@ -168,7 +202,8 @@ function M.dismiss()
     clear_state()
 end
 
-function M.complete(prefix, suffix, callback)
+function M.complete(prefix, suffix, callback, opts)
+    opts = opts or {}
     local url = string.format(
         "http://%s:%d/infill",
         config.get("llama_server.host"),
@@ -179,7 +214,7 @@ function M.complete(prefix, suffix, callback)
         prompt         = "",
         input_prefix   = prefix or "",
         input_suffix   = suffix or "",
-        n_predict      = config.get("fim.max_tokens") or 64,
+        n_predict      = opts.max_tokens or config.get("fim.max_tokens") or 64,
         temperature    = config.get("fim.temperature") or 0.0,
         top_p          = config.get("fim.top_p") or 0.9,
         top_k          = config.get("fim.top_k") or 40,
@@ -204,7 +239,10 @@ function M.complete(prefix, suffix, callback)
         local text = response.content
 
         if not text or text == "" then
-            vim.notify("FIM error: empty or missing content", vim.log.levels.WARN)
+            -- Silent failure for auto-complete to avoid spamming
+            if not opts.max_tokens then
+                vim.notify("FIM error: empty or missing content", vim.log.levels.WARN)
+            end
             callback(nil)
             return
         end
@@ -226,7 +264,7 @@ function M.setup_autocmds()
             timer:start(500, 0, vim.schedule_wrap(function()
                 local mode = api.nvim_get_mode().mode
                 if mode == "i" then
-                    M.trigger()
+                    M.trigger_auto()
                 end
             end))
         end

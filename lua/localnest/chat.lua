@@ -9,22 +9,44 @@ local prompts = require("localnest.prompts")
 local context = require("localnest.context")
 local tools   = require("localnest.tools")
 
-M.state       = {
+M.history = {}
+
+M.state   = {
     bufnr = nil,
     winid = nil,
-    history = {},
 }
 
 local function open_floating_window(title)
+    if M.state.winid and vim.api.nvim_win_is_valid(M.state.winid) then
+        vim.api.nvim_set_current_win(M.state.winid)
+        return M.state.bufnr, M.state.winid
+    end
+
     local width  = math.floor(vim.o.columns * 0.8)
     local height = math.floor(vim.o.lines * 0.6)
     local row    = math.floor((vim.o.lines - height) / 2)
     local col    = math.floor((vim.o.columns - width) / 2)
 
-    local buf    = vim.api.nvim_create_buf(false, true)
-    vim.api.nvim_buf_set_name(buf, "LocalNest Chat " .. os.time())
-    vim.api.nvim_set_option_value("filetype", "markdown", { buf = buf })
-    vim.api.nvim_set_option_value("buftype", "nofile", { buf = buf })
+    local buf
+    if M.state.bufnr and vim.api.nvim_buf_is_valid(M.state.bufnr) then
+        buf = M.state.bufnr
+    else
+        buf = vim.api.nvim_create_buf(false, true)
+        vim.api.nvim_buf_set_name(buf, "LocalNest Chat " .. os.time())
+        vim.api.nvim_set_option_value("filetype", "markdown", { buf = buf })
+        vim.api.nvim_set_option_value("buftype", "nofile", { buf = buf })
+
+        -- Add keymaps
+        vim.keymap.set("n", "q", function()
+            if M.state.winid and vim.api.nvim_win_is_valid(M.state.winid) then
+                vim.api.nvim_win_close(M.state.winid, true)
+            end
+        end, { buffer = buf, silent = true })
+
+        vim.keymap.set("n", "r", function()
+            M.respond()
+        end, { buffer = buf, silent = true, desc = "Respond to LocalNest AI" })
+    end
 
     local win = vim.api.nvim_open_win(buf, true, {
         relative = "editor",
@@ -106,18 +128,18 @@ local function start_loading()
     end))
 end
 
--- Call llama-server with streaming using the /completion endpoint
-local function llama_complete_stream(prompt, callback)
+-- Call llama-server with streaming using the /v1/chat/completions endpoint
+local function llama_chat_stream(messages, callback)
     local url = string.format(
-        "http://%s:%d/completion",
+        "http://%s:%d/v1/chat/completions",
         config.get("llama_server.host"),
         config.get("llama_server.port")
     )
 
     local body = {
-        prompt = prompt,
-        n_predict = config.get("chat.max_tokens"),
-        temperature = config.get("chat.temperature"),
+        messages = messages,
+        max_tokens = config.get("chat.max_tokens") or 512,
+        temperature = config.get("chat.temperature") or 0.7,
         model = config.get("models.chat"),
         stream = true,
     }
@@ -158,12 +180,45 @@ end
 
 function M.ask(question)
     open_floating_window("LocalNest AI")
+    
+    -- If this isn't the first message, add a newline
+    if #M.history > 0 then
+        append_to_chat("\n\n---\n\n")
+    end
+    
+    append_to_chat("**User**: " .. question .. "\n\n")
     start_loading()
 
-    local system_prompt = config.get("chat.system_prompt")
-    local full_prompt = string.format("%s\n\n### User:\n%s\n\n### Assistant:\n", system_prompt, question)
+    -- Add user question to history
+    table.insert(M.history, { role = "user", content = question })
 
-    llama_complete_stream(full_prompt)
+    local messages = {}
+    table.insert(messages, { role = "system", content = config.get("chat.system_prompt") })
+    for _, msg in ipairs(M.history) do
+        table.insert(messages, msg)
+    end
+
+    llama_chat_stream(messages, function(full_response)
+        if full_response and full_response ~= "" then
+            table.insert(M.history, { role = "assistant", content = full_response })
+            append_to_chat("\n") -- Ensure final response has a newline
+        end
+    end)
+end
+
+function M.respond()
+    vim.ui.input({ prompt = "Follow-up question: " }, function(input)
+        if not input or input == "" then return end
+        vim.schedule(function()
+            -- Ensure window is still open or reopen it
+            M.ask(input)
+        end)
+    end)
+end
+
+function M.clear_history()
+    M.history = {}
+    vim.notify("LocalNest Chat history cleared", vim.log.levels.INFO)
 end
 
 function M.ask_on_selection()
