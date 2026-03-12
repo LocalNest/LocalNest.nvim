@@ -170,12 +170,17 @@ local function llama_chat_stream(messages, callback)
             first_chunk = false
         end
 
-        -- Handle different chat response formats (OpenAI, Ollama, and legacy content)
-        local content = chunk.content
-        if chunk.choices and chunk.choices[1] and chunk.choices[1].delta then
-            content = chunk.choices[1].delta.content
+        -- Handle all common chat/completion stream formats
+        local content = chunk.content -- llama.cpp / completion legacy
+        if chunk.choices and chunk.choices[1] then
+            local choice = chunk.choices[1]
+            if choice.delta and choice.delta.content then
+                content = choice.delta.content -- OpenAI Chat
+            elseif choice.text then
+                content = choice.text -- OpenAI Completion
+            end
         elseif chunk.message and chunk.message.content then
-            content = chunk.message.content
+            content = chunk.message.content -- Ollama Chat
         end
 
         if content then

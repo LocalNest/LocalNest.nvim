@@ -69,6 +69,17 @@ function M.post(url, body, callback, opts)
                     vim.schedule(function() callback("Empty response received", nil) end)
                 end
             else
+                -- Drain remaining buffer if any
+                local line = vim.trim(buffer)
+                if line ~= "" then
+                    local json_str = line:match("^data:%s*(.*)$") or line
+                    if json_str ~= "[DONE]" and json_str ~= "" then
+                        local ok, decoded = pcall(vim.json.decode, json_str)
+                        if ok then
+                            vim.schedule(function() callback(nil, decoded) end)
+                        end
+                    end
+                end
                 -- Signal end of stream
                 vim.schedule(function() callback(nil, nil) end)
             end
